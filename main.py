@@ -104,7 +104,7 @@ class EditorTarefas(tk.Toplevel):
         tk.Button(btn_frame, text="Adicionar", command=self.adicionar_tarefa, bg="#3A3D41", fg=fg_color).pack(side=tk.LEFT, padx=5)
         tk.Button(btn_frame, text="Remover", command=self.remover_tarefa, bg="#3A3D41", fg=fg_color).pack(side=tk.LEFT, padx=5)
         tk.Button(btn_frame, text="Editar", command=self.editar_tarefa, bg="#3A3D41", fg=fg_color).pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text="Fechar", command=self.salvar_fechar, bg="#3A3D41", fg=fg_color).pack(side=tk.RIGHT, padx=5)
+        tk.Button(btn_frame, text="Salvar", command=self.salvar_fechar, bg="#3A3D41", fg=fg_color).pack(side=tk.RIGHT, padx=5)
 
         self.carregar_tarefas_iniciais()
 

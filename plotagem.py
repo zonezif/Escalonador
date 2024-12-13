@@ -1,14 +1,21 @@
 import matplotlib.pyplot as plt
 from escalonadores import construir_intervalos
 from tarefas import calcular_mmc_lista
+import matplotlib.patches as patches
+import matplotlib.cm as cm
 
 def plotar_simulacao(tarefas, linha_do_tempo, instancias, tipo_analise="edf"):
     intervalos = construir_intervalos(linha_do_tempo)
+    
+    # Conta o número de tarefas + 1 (para a CPU)
     Numero_tarefas = len(tarefas) + 1
+    
+    # Cria a lista de tarefas invertida e adiciona a CPU no topo
     task_names = [t.nome for t in tarefas]
-    task_names.reverse()  # inverte a lista de tarefas
+    task_names.reverse()  
     nomes_tarefas = ["CPU"] + task_names
 
+    # Calcula o hiper-período
     periodos = [t.periodo for t in tarefas]
     hiper_periodo = calcular_mmc_lista(periodos)
 
@@ -20,7 +27,7 @@ def plotar_simulacao(tarefas, linha_do_tempo, instancias, tipo_analise="edf"):
 
     fig = plt.Figure(figsize=(12, 8))
 
-    # Compartilhar o eixo x para sincronizar zoom/pan
+    # Subplots com sharex para sincronizar zoom/pan
     ax2 = fig.add_subplot(2, 1, 1)
     ax4 = fig.add_subplot(2, 1, 2, sharex=ax2)
 
@@ -70,9 +77,8 @@ def plotar_simulacao(tarefas, linha_do_tempo, instancias, tipo_analise="edf"):
             for tempo in tempos_liberacao.get(nome, []):
                 ax4.plot(tempo, i, marker='>', color='black')
 
-    import matplotlib.cm as cm
-    cmap = cm.get_cmap("tab10")
     cores = {}
+    cmap = cm.get_cmap("tab10")
     for i, nome in enumerate(nomes_tarefas):
         cores[nome] = cmap(i)
 
@@ -80,7 +86,9 @@ def plotar_simulacao(tarefas, linha_do_tempo, instancias, tipo_analise="edf"):
 
     intervalos_por_instancia = {}
     for intervalo in intervalos:
-        instancia, inicio, fim = intervalo
+        instancia = intervalo[0]
+        inicio = intervalo[1]
+        fim = intervalo[2]
         chave = (instancia['nome_tarefa'], instancia['execucao_id'])
         if chave not in intervalos_por_instancia:
             intervalos_por_instancia[chave] = []
@@ -93,7 +101,7 @@ def plotar_simulacao(tarefas, linha_do_tempo, instancias, tipo_analise="edf"):
         fim = intervalo[2]
         nome_tarefa = instancia['nome_tarefa']
         execucao_id = instancia['execucao_id']
-        prioridade = instancia.get('prioridade', None)  # caso não exista prioridade, retorna None
+        prioridade = instancia.get('prioridade', None) 
 
         # Barra na CPU
         ax4.barh(cpu_y, fim - inicio, left=inicio, height=0.8, color=cores.get(nome_tarefa, 'gray'), edgecolor='black')
@@ -104,12 +112,11 @@ def plotar_simulacao(tarefas, linha_do_tempo, instancias, tipo_analise="edf"):
             ax4.barh(y, fim - inicio, left=inicio, height=0.8, color=cores.get(nome_tarefa, 'gray'), edgecolor='black', alpha=0.7)
             ax4.text((inicio + fim) / 2, y, str(execucao_id), ha='center', va='center', color='white', fontsize=8)
 
-            # Se prioridade estiver definida, mostra acima da barra
             if prioridade is not None:
                 prioridade = Numero_tarefas - int(prioridade)
                 ax4.text((inicio + fim) / 2, y + 0.4, f"P{prioridade}", ha='center', va='bottom', color='black', fontsize=8)
 
-    # Preempções e deadlines (última etapa)
+    # Preempções e intervalos ociosos entre intervalos da mesma tarefa
     for chave, lista_int in intervalos_por_instancia.items():
         lista_int.sort(key=lambda x: x[0])
         nome_tarefa, execucao_id = chave
@@ -122,14 +129,26 @@ def plotar_simulacao(tarefas, linha_do_tempo, instancias, tipo_analise="edf"):
                 if i < len(lista_int) - 1:
                     # Interrompido
                     ax4.plot(fim, y, marker='s', markerfacecolor='blue', markeredgecolor='black', ms=8)
+
+                    # Próximo intervalo
+                    ini_next = lista_int[i+1][0]
+
+                    # Área hachurada representando o intervalo ocioso
+                    ax4.add_patch(
+                        patches.Rectangle((fim, y - 0.4),
+                                          ini_next - fim,
+                                          0.8,
+                                          facecolor='gray',
+                                          alpha=0.3,
+                                          hatch='//',
+                                          edgecolor='black')
+                    )
                 else:
-                    # Verificar conclusão e deadline
+                    # Último intervalo: verificar conclusão e deadline
                     if instancia['tempo_restante'] == 0:
                         if fim <= deadline:
-                            # Deadline cumprido
                             ax4.plot(fim, y, marker='$\u2713$', markerfacecolor='green', markeredgecolor='green', ms=8)
                         else:
-                            # Deadline perdido
                             ax4.plot(fim, y, marker='X', markerfacecolor='red', markeredgecolor='black', ms=8)
                     else:
                         if fim > deadline:
