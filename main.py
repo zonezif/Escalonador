@@ -1,3 +1,4 @@
+# Lucas Ribeiro Nunes
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkinter.scrolledtext import ScrolledText
