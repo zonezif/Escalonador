@@ -10,6 +10,19 @@ def atribuir_prioridades_rm(tarefas):
     tarefas_ordenadas = sorted(tarefas, key=lambda x: x.periodo)
     for i, t in enumerate(tarefas_ordenadas):
         t.prioridade = i + 1
+    
+    # Verificação de escalonabilidade sob RM
+    n = len(tarefas)
+    # Soma das utilizações: U = sum(Ci/Ti)
+    U = sum((t.tempo_computacao / t.periodo) for t in tarefas)
+    # Limite de escalonabilidade: n*(2^(1/n)-1)
+    limite = n * (2**(1/n) - 1)
+
+    if U > limite:
+        print("Aviso: O conjunto de tarefas não é escalonável sob RM!")
+    else:
+        print("Conjunto de tarefas escalonável sob RM.")
+    
     return tarefas
 
 def gerar_instancias(tarefas, hiper_periodo):

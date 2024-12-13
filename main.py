@@ -252,7 +252,7 @@ class App:
                 t.prioridade = None
 
         instancias = gerar_instancias(self.tarefas, hiper_periodo)
-        
+
         tipo_lower = tipo.lower()
         if tipo_lower == "edf":
             linha_do_tempo = escalonamento_edf(instancias, hiper_periodo)
