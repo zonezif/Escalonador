@@ -1,4 +1,4 @@
-# Lucas Ribeiro Nunes
+# Lucas Ribeiro Nunes 1.0
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkinter.scrolledtext import ScrolledText
